@@ -37,30 +37,24 @@ class Room:
             await page.evaluate(f'room.sendChat("Hello from Python!")')
 
     async def create_room(self):
-        browser = await self.browser.get_browser()
-        page = await browser.newPage()
+        async with self.browser as browser:
+            page = await browser.newPage()
 
-        page.on('console', lambda msg: asyncio.ensure_future(self.handle_console_message(msg, page)))
+            page.on('console', lambda msg: asyncio.ensure_future(self.handle_console_message(msg, page)))
 
-        try:
-            room_link = await self._init(page)
-            print(f'Room created successfully: {room_link}')
+            try:
+                room_link = await self._init(page)
+                print(f'Room created successfully: {room_link}')
 
-            await self.room_link_event.wait()
+                await self.room_link_event.wait()
 
-        except TimeoutError:
-            print("The connection to the server has timed out. Please try again later.")
-        except ConnectionError:
-            print("There was a connection error. Check your internet connection and try again.")
-        except ValueError:
-            print("The provided value is invalid.")
-        except Exception as e:
-            print(f'Error creating room: {e}')
-        finally:
-            await page.close()
-
-    async def __aenter__(self):
-        return self
-
-    async def __aexit__(self, exc_type, exc_value, traceback):
-        await self.browser.close_browser()
+            except TimeoutError:
+                print("The connection to the server has timed out. Please try again later.")
+            except ConnectionError:
+                print("There was a connection error. Check your internet connection and try again.")
+            except ValueError:
+                print("The provided value is invalid.")
+            except Exception as e:
+                print(f'Error creating room: {e}')
+            finally:
+                await page.close()
